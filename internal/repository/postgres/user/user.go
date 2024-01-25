@@ -12,11 +12,11 @@ import (
 )
 
 type User struct {
-	Conn *postgres.Conn
+	conn *postgres.Conn
 }
 
 func New(con *postgres.Conn) *User {
-	return &User{Conn: con}
+	return &User{conn: con}
 }
 
 func (u *User) List(page int, name, surname string) ([]domain.User, error) {
@@ -39,7 +39,7 @@ func (u *User) List(page int, name, surname string) ([]domain.User, error) {
 
 	query += fmt.Sprintf(" ORDER BY name LIMIT 10 OFFSET %d", offset)
 
-	rows, err := u.Conn.DB.Query(query, args...)
+	rows, err := u.conn.DB.Query(query, args...)
 	if err != nil {
 		return []domain.User{}, fmt.Errorf("%s: %w", op, err)
 	}
@@ -72,7 +72,7 @@ func (u *User) GetById(id string) (domain.User, error) {
 	var user domain.User
 
 	query := `SELECT id, name, surname, patronymic, sex, nationality, age FROM users WHERE id = $1`
-	err := u.Conn.DB.QueryRow(query, id).Scan(&user.Id, &user.Name, &user.Surname, &user.Patronymic, &user.Sex, &user.Nationality, &user.Age)
+	err := u.conn.DB.QueryRow(query, id).Scan(&user.Id, &user.Name, &user.Surname, &user.Patronymic, &user.Sex, &user.Nationality, &user.Age)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return domain.User{}, fmt.Errorf("%s: %w", op, exception.ErrUserNotFound)
@@ -89,7 +89,7 @@ func (u *User) Exists(id string) (bool, error) {
 	var exists bool
 
 	query := `SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)`
-	err := u.Conn.DB.QueryRow(query, id).Scan(&exists)
+	err := u.conn.DB.QueryRow(query, id).Scan(&exists)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return false, fmt.Errorf("%s: %w", op, exception.ErrUserNotFound)
@@ -107,7 +107,7 @@ func (u *User) Save(name, surname string, patronymic, sex, nationality *string, 
 	var user domain.User
 
 	query := `INSERT INTO users (name, surname, patronymic, sex, nationality, age) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`
-	err := u.Conn.DB.QueryRow(query, name, surname, patronymic, sex, nationality, age).Scan(&user.Id)
+	err := u.conn.DB.QueryRow(query, name, surname, patronymic, sex, nationality, age).Scan(&user.Id)
 	if err != nil {
 		return domain.User{}, fmt.Errorf("%s: %w", op, err)
 	}
@@ -126,7 +126,7 @@ func (u *User) Update(id, name, surname string, patronymic, sex, nationality *st
 	const op = "repository.postgres.user.Update"
 
 	query := `UPDATE users SET name = $1, surname = $2, patronymic = $3, sex = $4, nationality = $5, age = $6 WHERE id = $7`
-	_, err := u.Conn.DB.Exec(query, name, surname, patronymic, sex, nationality, age, id)
+	_, err := u.conn.DB.Exec(query, name, surname, patronymic, sex, nationality, age, id)
 	if err != nil {
 		return domain.User{}, fmt.Errorf("%s: %w", op, err)
 	}
@@ -137,7 +137,7 @@ func (u *User) DelById(id string) (string, error) {
 	const op = "repository.postgres.user.DelById"
 
 	query := `DELETE FROM users WHERE id = $1`
-	result, err := u.Conn.DB.Exec(query, id)
+	result, err := u.conn.DB.Exec(query, id)
 	if err != nil {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
