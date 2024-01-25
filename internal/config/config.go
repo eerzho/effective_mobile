@@ -13,6 +13,7 @@ type Config struct {
 	Env      string `yaml:"env" env-required:"true"`
 	Http     `yaml:"http"`
 	Postgres `yaml:"postgres"`
+	Api      `yaml:"api"`
 }
 
 type Http struct {
@@ -24,6 +25,12 @@ type Http struct {
 type Postgres struct {
 	Url            string `yaml:"url" env-required:"true"`
 	MigrationsPath string `yaml:"migrations_path" env-required:"true"`
+}
+
+type Api struct {
+	ApiForAge string `yaml:"api_for_age"`
+	ApiForGen string `yaml:"api_for_gen"`
+	ApiForNat string `yaml:"api_for_nat"`
 }
 
 func MustLoad() *Config {

@@ -10,3 +10,15 @@ type Repository interface {
 	Update(id, name, surname string, patronymic, sex, nationality *string, age *int) (domain.User, error)
 	DelById(id string) (string, error)
 }
+
+type AgeRepository interface {
+	AgeByName(name string) (*int, error)
+}
+
+type SexRepository interface {
+	SexByName(name string) (*string, error)
+}
+
+type NatRepository interface {
+	NatByName(name string) (*string, error)
+}

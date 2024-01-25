@@ -4,5 +4,9 @@ http:
   timeout: 4s
   idle_timeout: 60s
 postgres:
-  url: "postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable"
+  url: "postgres://psql:password@localhost:5432/psql?sslmode=disable"
   migrations_path: "migrations"
+api:
+  api_for_age: "https://api.agify.io"
+  api_for_gen: "https://api.genderize.io"
+  api_for_nat: "https://api.nationalize.io"

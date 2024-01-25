@@ -3,17 +3,34 @@ package user
 import (
 	"fmt"
 	"log/slog"
+	"sync"
 
 	"effective_mobile/internal/domain"
+	"effective_mobile/internal/lib/logger/sl"
 )
 
 type User struct {
-	log        *slog.Logger
-	repository Repository
+	log           *slog.Logger
+	repository    Repository
+	ageRepository AgeRepository
+	sexRepository SexRepository
+	natRepository NatRepository
 }
 
-func New(log *slog.Logger, repository Repository) *User {
-	return &User{log: log, repository: repository}
+func New(
+	log *slog.Logger,
+	repository Repository,
+	ageRepository AgeRepository,
+	sexRepository SexRepository,
+	natRepository NatRepository,
+) *User {
+	return &User{
+		log:           log,
+		repository:    repository,
+		ageRepository: ageRepository,
+		sexRepository: sexRepository,
+		natRepository: natRepository,
+	}
 }
 
 func (u *User) Index(page int, name, surname string) ([]domain.User, error) {
@@ -42,7 +59,61 @@ func (u *User) Store(name, surname string, patronymic *string) (domain.User, err
 
 	log.Info("saving user")
 
-	user, err := u.repository.Save(name, surname, patronymic, nil, nil, nil)
+	var temp struct {
+		age *int
+		sex *string
+		nat *string
+	}
+
+	var wg sync.WaitGroup
+	mutex := sync.Mutex{}
+	wg.Add(3)
+
+	go func() {
+		defer wg.Done()
+
+		log.Info("getting user age")
+		age, err := u.ageRepository.AgeByName(name)
+		if err != nil {
+			log.Error("failed to getting age", sl.Err(err))
+		}
+
+		mutex.Lock()
+		temp.age = age
+		mutex.Unlock()
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		log.Info("getting user sex")
+		sex, err := u.sexRepository.SexByName(name)
+		if err != nil {
+			log.Error("failed to getting sex", sl.Err(err))
+		}
+
+		mutex.Lock()
+		temp.sex = sex
+		mutex.Unlock()
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		log.Info("getting user nationality")
+		nat, err := u.natRepository.NatByName(name)
+		if err != nil {
+			log.Error("failed to getting nationality", sl.Err(err))
+		}
+
+		mutex.Lock()
+		temp.nat = nat
+		mutex.Unlock()
+	}()
+
+	wg.Wait()
+
+	user, err := u.repository.Save(name, surname, patronymic, temp.sex, temp.nat, temp.age)
 	if err != nil {
 		log.Error("failed to save user")
 

@@ -54,7 +54,7 @@ func main() {
 
 	log.Info("starting http server", slog.String("address", cfg.Address))
 
-	application := app.New(log, connection)
+	application := app.New(cfg, log, connection)
 
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
