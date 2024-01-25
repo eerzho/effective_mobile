@@ -1,0 +1,8 @@
+env: "local" # local, dev, prod
+http:
+  address: "localhost:8000"
+  timeout: 4s
+  idle_timeout: 60s
+postgres:
+  url: "postgres://postgres:mysecretpassword@localhost:5432/postgres?sslmode=disable"
+  migrations_path: "migrations"
