@@ -1,0 +1,23 @@
+root = "."
+tmp_dir = "./tmp"
+
+[build]
+bin = "./tmp/main"
+cmd = "go build -o ./tmp/main ./cmd/effective_mobile/main.go"
+exclude_dir = ["tmp"]
+
+[log]
+time = false
+
+[color]
+main = "magenta"
+watcher = "cyan"
+build = "yellow"
+runner = "green"
+
+[misc]
+clean_on_exit = true
+
+[screen]
+clear_on_rebuild = true
+keep_scroll = true

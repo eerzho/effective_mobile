@@ -1,0 +1,28 @@
+version: '3.8'
+name: effective_mobile
+
+services:
+  effective_mobile:
+    container_name: effective_mobile
+    build: ./effective_mobile
+    environment:
+      - CONFIG_PATH=/app/config/docker.yaml
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./effective_mobile:/app
+
+  psql:
+    container_name: psql
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_USER=local
+      - POSTGRES_DB=local
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - psql:/var/lib/postgresql/data
+
+volumes:
+  psql:

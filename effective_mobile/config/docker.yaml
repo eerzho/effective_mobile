@@ -1,0 +1,12 @@
+env: "local" # local, dev, prod
+http:
+  address: "effective_mobile:8000"
+  timeout: 4s
+  idle_timeout: 60s
+postgres:
+  url: "postgres://local:password@psql:5432/local?sslmode=disable"
+  migrations_path: "migrations"
+api:
+  api_for_age: "https://api.agify.io"
+  api_for_gen: "https://api.genderize.io"
+  api_for_nat: "https://api.nationalize.io"
