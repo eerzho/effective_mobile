@@ -18,13 +18,13 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type User struct {
+type Handler struct {
 	log     *slog.Logger
 	service Service
 }
 
-func New(log *slog.Logger, service Service) *User {
-	return &User{log: log, service: service}
+func New(log *slog.Logger, service Service) *Handler {
+	return &Handler{log: log, service: service}
 }
 
 // Index
@@ -35,26 +35,25 @@ func New(log *slog.Logger, service Service) *User {
 // @success 200 {object} response.Index
 // @response 500 {object} response.Error
 // @router /users [get]
-func (u *User) Index() http.HandlerFunc {
+func (h *Handler) Index() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handler.user.Index"
 
-		log := u.log.With(
+		log := h.log.With(
 			slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
 		queryParams := r.URL.Query()
 
-		pageStr := queryParams.Get("page")
-		page, err := strconv.Atoi(pageStr)
+		name := queryParams.Get("name")
+		surname := queryParams.Get("surname")
+		page, err := strconv.Atoi(queryParams.Get("page"))
 		if err != nil {
 			page = 1
 		}
-		name := queryParams.Get("name")
-		surname := queryParams.Get("surname")
 
-		users, err := u.service.Index(page, name, surname)
+		users, err := h.service.Index(page, name, surname)
 		if err != nil {
 			log.Error("failed to get list of users", sl.Err(err))
 
@@ -80,11 +79,11 @@ func (u *User) Index() http.HandlerFunc {
 // @response 400 {object} response.Error
 // @response 500 {object} response.Error
 // @router /users [post]
-func (u *User) Store() http.HandlerFunc {
+func (h *Handler) Store() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handler.user.Store"
 
-		log := u.log.With(
+		log := h.log.With(
 			slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
@@ -125,7 +124,7 @@ func (u *User) Store() http.HandlerFunc {
 			return
 		}
 
-		user, err := u.service.Store(req.Name, req.Surname, req.Patronymic)
+		user, err := h.service.Store(req.Name, req.Surname, req.Patronymic)
 		if err != nil {
 			log.Error("failed to store user", sl.Err(err))
 
@@ -152,11 +151,11 @@ func (u *User) Store() http.HandlerFunc {
 // @response 400 {object} response.Error
 // @response 500 {object} response.Error
 // @router /users/{id} [get]
-func (u *User) Show() http.HandlerFunc {
+func (h *Handler) Show() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handler.user.Show"
 
-		log := u.log.With(
+		log := h.log.With(
 			slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
@@ -171,7 +170,7 @@ func (u *User) Show() http.HandlerFunc {
 			return
 		}
 
-		user, err := u.service.Show(id)
+		user, err := h.service.Show(id)
 		if errors.Is(err, exception.ErrUserNotFound) {
 			log.Debug("user not found id: " + id)
 
@@ -208,11 +207,11 @@ func (u *User) Show() http.HandlerFunc {
 // @response 400 {object} response.Error
 // @response 500 {object} response.Error
 // @router /users/{id} [patch]
-func (u *User) Update() http.HandlerFunc {
+func (h *Handler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handler.user.Update"
 
-		log := u.log.With(
+		log := h.log.With(
 			slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
@@ -263,7 +262,7 @@ func (u *User) Update() http.HandlerFunc {
 			return
 		}
 
-		user, err := u.service.Update(id, req.Name, req.Surname, req.Patronymic, req.Sex, req.Nationality, req.Age)
+		user, err := h.service.Update(id, req.Name, req.Surname, req.Patronymic, req.Gender, req.CountryId, req.Age)
 		if errors.Is(err, exception.ErrUserNotFound) {
 			log.Debug("user not found id: " + id)
 
@@ -299,11 +298,11 @@ func (u *User) Update() http.HandlerFunc {
 // @response 400 {object} response.Error
 // @response 500 {object} response.Error
 // @router /users/{id} [delete]
-func (u *User) Delete() http.HandlerFunc {
+func (h *Handler) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handler.user.Delete"
 
-		log := u.log.With(
+		log := h.log.With(
 			slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
@@ -318,7 +317,7 @@ func (u *User) Delete() http.HandlerFunc {
 			return
 		}
 
-		id, err := u.service.Delete(id)
+		id, err := h.service.Delete(id)
 		if errors.Is(err, exception.ErrUserNotFound) {
 			log.Debug("user not found id: " + id)
 

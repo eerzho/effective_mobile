@@ -4,15 +4,15 @@ definitions:
     properties:
       age:
         type: integer
+      country_id:
+        type: string
+      gender:
+        type: string
       id:
         type: string
       name:
         type: string
-      nationality:
-        type: string
       patronymic:
-        type: string
-      sex:
         type: string
       surname:
         type: string
@@ -39,19 +39,19 @@ definitions:
     properties:
       age:
         type: integer
+      country_id:
+        maxLength: 255
+        minLength: 2
+        type: string
+      gender:
+        maxLength: 255
+        minLength: 2
+        type: string
       name:
         maxLength: 255
         minLength: 2
         type: string
-      nationality:
-        maxLength: 255
-        minLength: 2
-        type: string
       patronymic:
-        maxLength: 255
-        minLength: 2
-        type: string
-      sex:
         maxLength: 255
         minLength: 2
         type: string

@@ -7,10 +7,10 @@ import (
 	"effective_mobile/internal/conn"
 	userH "effective_mobile/internal/http/handler/user"
 	mwLogger "effective_mobile/internal/http/middleware"
-	apiAgeR "effective_mobile/internal/repository/api/agify/user"
-	apiSexR "effective_mobile/internal/repository/api/genderize/user"
-	apiNatR "effective_mobile/internal/repository/api/nationalize/user"
-	userR "effective_mobile/internal/repository/postgres/user"
+	agerUserR "effective_mobile/internal/repository/agify/user"
+	genderUserR "effective_mobile/internal/repository/genderize/user"
+	countryerUserR "effective_mobile/internal/repository/nationalize/user"
+	pUserR "effective_mobile/internal/repository/postgres/user"
 	userS "effective_mobile/internal/service/user"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -31,12 +31,12 @@ func New(cfg *config.Config, log *slog.Logger, connection *conn.Conn) *App {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
-	userAgeRepo := apiAgeR.New(cfg.ApiForAge)
-	userSexRepo := apiSexR.New(cfg.ApiForGen)
-	userNatRepo := apiNatR.New(cfg.ApiForNat)
+	pUserRepo := pUserR.New(connection.Psql)
+	agerUserRepo := agerUserR.New(cfg.ApiForAge)
+	genderUserRepo := genderUserR.New(cfg.ApiForGen)
+	countryerUserRepo := countryerUserR.New(cfg.ApiForNat)
 
-	userRepo := userR.New(connection.Psql)
-	userService := userS.New(log, userRepo, userAgeRepo, userSexRepo, userNatRepo)
+	userService := userS.New(log, pUserRepo, agerUserRepo, genderUserRepo, countryerUserRepo)
 	userHandler := userH.New(log, userService)
 
 	router.Route("/api", func(r chi.Router) {

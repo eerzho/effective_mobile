@@ -9,42 +9,42 @@ import (
 	"effective_mobile/internal/lib/logger/sl"
 )
 
-type User struct {
+type Service struct {
 	log           *slog.Logger
-	repository    Repository
-	ageRepository AgeRepository
-	sexRepository SexRepository
-	natRepository NatRepository
+	repo          Repo
+	agerRepo      AgerRepo
+	genderRepo    GenderRepo
+	countryerRepo CountryerRepo
 }
 
 func New(
 	log *slog.Logger,
-	repository Repository,
-	ageRepository AgeRepository,
-	sexRepository SexRepository,
-	natRepository NatRepository,
-) *User {
-	return &User{
+	repo Repo,
+	agerRepo AgerRepo,
+	genderRepo GenderRepo,
+	countryerRepo CountryerRepo,
+) *Service {
+	return &Service{
 		log:           log,
-		repository:    repository,
-		ageRepository: ageRepository,
-		sexRepository: sexRepository,
-		natRepository: natRepository,
+		repo:          repo,
+		agerRepo:      agerRepo,
+		genderRepo:    genderRepo,
+		countryerRepo: countryerRepo,
 	}
 }
 
-func (u *User) Index(page int, name, surname string) ([]domain.User, error) {
+func (s *Service) Index(page int, name, surname string) ([]*domain.User, error) {
 	const op = "service.user.Index"
 
-	log := u.log.With(slog.String("op", op))
+	log := s.log.With(slog.String("op", op))
 
 	log.Info("getting users")
 
-	list, err := u.repository.List(page, name, surname)
+	list, err := s.repo.List(page, name, surname)
 	if err != nil {
 		log.Error("failed to get users")
 
-		return []domain.User{}, fmt.Errorf("%s: %w", op, err)
+		return []*domain.User{}, fmt.Errorf("%s: %w", op, err)
 	}
 
 	log.Info("got users")
@@ -52,72 +52,56 @@ func (u *User) Index(page int, name, surname string) ([]domain.User, error) {
 	return list, nil
 }
 
-func (u *User) Store(name, surname string, patronymic *string) (domain.User, error) {
+func (s *Service) Store(name, surname string, patronymic *string) (*domain.User, error) {
 	const op = "service.user.Store"
 
-	log := u.log.With(slog.String("op", op))
+	log := s.log.With(slog.String("op", op))
 
 	log.Info("saving user")
 
-	var temp struct {
-		age *int
-		sex *string
-		nat *string
-	}
-
 	var wg sync.WaitGroup
-	mutex := sync.Mutex{}
 	wg.Add(3)
 
+	var age *int
 	go func() {
 		defer wg.Done()
-
 		log.Info("getting user age")
-		age, err := u.ageRepository.AgeByName(name)
+		var err error
+		age, err = s.agerRepo.ByName(name)
 		if err != nil {
 			log.Error("failed to getting age", sl.Err(err))
 		}
-
-		mutex.Lock()
-		temp.age = age
-		mutex.Unlock()
 	}()
 
+	var gender *string
 	go func() {
 		defer wg.Done()
-
-		log.Info("getting user sex")
-		sex, err := u.sexRepository.SexByName(name)
+		log.Info("getting user gender")
+		var err error
+		gender, err = s.genderRepo.ByName(name)
 		if err != nil {
-			log.Error("failed to getting sex", sl.Err(err))
+			log.Error("failed to getting gender", sl.Err(err))
 		}
-
-		mutex.Lock()
-		temp.sex = sex
-		mutex.Unlock()
 	}()
 
+	var countryId *string
 	go func() {
 		defer wg.Done()
-
-		log.Info("getting user nationality")
-		nat, err := u.natRepository.NatByName(name)
+		log.Info("getting user country_id")
+		var err error
+		countryId, err = s.countryerRepo.ByName(name)
 		if err != nil {
-			log.Error("failed to getting nationality", sl.Err(err))
+			log.Error("failed to getting country_id", sl.Err(err))
 		}
-
-		mutex.Lock()
-		temp.nat = nat
-		mutex.Unlock()
 	}()
 
 	wg.Wait()
 
-	user, err := u.repository.Save(name, surname, patronymic, temp.sex, temp.nat, temp.age)
+	user, err := s.repo.Save(name, surname, patronymic, gender, countryId, age)
 	if err != nil {
 		log.Error("failed to save user")
 
-		return domain.User{}, fmt.Errorf("%s: %w", op, err)
+		return &domain.User{}, fmt.Errorf("%s: %w", op, err)
 	}
 
 	log.Info("saved user")
@@ -125,18 +109,18 @@ func (u *User) Store(name, surname string, patronymic *string) (domain.User, err
 	return user, nil
 }
 
-func (u *User) Show(id string) (domain.User, error) {
+func (s *Service) Show(id string) (*domain.User, error) {
 	const op = "service.user.Show"
 
-	log := u.log.With(slog.String("op", op))
+	log := s.log.With(slog.String("op", op))
 
 	log.Info("getting user")
 
-	user, err := u.repository.GetById(id)
+	user, err := s.repo.GetById(id)
 	if err != nil {
 		log.Error("failed to get user by id")
 
-		return domain.User{}, fmt.Errorf("%s: %w", op, err)
+		return &domain.User{}, fmt.Errorf("%s: %w", op, err)
 	}
 
 	log.Info("got user")
@@ -144,18 +128,18 @@ func (u *User) Show(id string) (domain.User, error) {
 	return user, nil
 }
 
-func (u *User) Update(id, name, surname string, patronymic, sex, nationality *string, age *int) (domain.User, error) {
+func (s *Service) Update(id, name, surname string, patronymic, gender, countryId *string, age *int) (*domain.User, error) {
 	const op = "service.user.Update"
 
-	log := u.log.With(slog.String("op", op))
+	log := s.log.With(slog.String("op", op))
 
 	log.Info("updating user")
 
-	user, err := u.repository.Update(id, name, surname, patronymic, sex, nationality, age)
+	user, err := s.repo.Update(id, name, surname, patronymic, gender, countryId, age)
 	if err != nil {
 		log.Error("failed to update user by id")
 
-		return domain.User{}, fmt.Errorf("%s: %w", op, err)
+		return &domain.User{}, fmt.Errorf("%s: %w", op, err)
 	}
 
 	log.Info("user updated")
@@ -163,14 +147,14 @@ func (u *User) Update(id, name, surname string, patronymic, sex, nationality *st
 	return user, nil
 }
 
-func (u *User) Delete(id string) (string, error) {
+func (s *Service) Delete(id string) (string, error) {
 	const op = "service.user.delete"
 
-	log := u.log.With(slog.String("op", op))
+	log := s.log.With(slog.String("op", op))
 
 	log.Info("deleting user")
 
-	id, err := u.repository.DelById(id)
+	id, err := s.repo.DelById(id)
 	if err != nil {
 		log.Error("failed to delete user by id")
 

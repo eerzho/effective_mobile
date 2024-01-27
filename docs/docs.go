@@ -234,19 +234,19 @@ const docTemplate = `{
                 "age": {
                     "type": "integer"
                 },
+                "country_id": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
                     "type": "string"
                 },
-                "nationality": {
-                    "type": "string"
-                },
                 "patronymic": {
-                    "type": "string"
-                },
-                "sex": {
                     "type": "string"
                 },
                 "surname": {
@@ -288,22 +288,22 @@ const docTemplate = `{
                 "age": {
                     "type": "integer"
                 },
+                "country_id": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 2
+                },
+                "gender": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 2
+                },
                 "name": {
                     "type": "string",
                     "maxLength": 255,
                     "minLength": 2
                 },
-                "nationality": {
-                    "type": "string",
-                    "maxLength": 255,
-                    "minLength": 2
-                },
                 "patronymic": {
-                    "type": "string",
-                    "maxLength": 255,
-                    "minLength": 2
-                },
-                "sex": {
                     "type": "string",
                     "maxLength": 255,
                     "minLength": 2

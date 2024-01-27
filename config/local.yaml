@@ -4,7 +4,7 @@ http:
   timeout: 4s
   idle_timeout: 60s
 postgres:
-  url: "postgres://psql:password@localhost:5432/psql?sslmode=disable"
+  url: "postgres://local:password@localhost:5432/local?sslmode=disable"
   migrations_path: "migrations"
 api:
   api_for_age: "https://api.agify.io"
