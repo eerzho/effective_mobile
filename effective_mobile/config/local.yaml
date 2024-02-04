@@ -5,7 +5,7 @@ http:
   idle_timeout: 60s
 postgres:
   url: "postgres://local:password@localhost:5432/local?sslmode=disable"
-  migrations_path: "migrations"
+  migrations_path: "./effective_mobile/migrations"
 api:
   api_for_age: "https://api.agify.io"
   api_for_gen: "https://api.genderize.io"
