@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strconv"
+	"slices"
 
 	"effective_mobile/internal/conn/postgres"
 	"effective_mobile/internal/domain"
@@ -19,25 +19,47 @@ func New(con *postgres.Conn) *Repo {
 	return &Repo{conn: con}
 }
 
-func (r *Repo) List(page int, name, surname string) ([]*domain.User, error) {
+func (r *Repo) List(page, size int, name, surname, patronymic, gender, countryId string, age int) ([]*domain.User, error) {
 	const op = "repository.postgres.user.List"
 
-	offset := (page - 1) * 10
 	var users []*domain.User
 
 	query := `SELECT id, name, surname, patronymic, gender, country_id, age FROM users WHERE 1=1`
-	var args []interface{}
 
-	if name != "" {
-		query += ` AND name LIKE '%' || $` + strconv.Itoa(len(args)+1) + ` || '%'`
-		args = append(args, name)
-	}
-	if surname != "" {
-		query += ` AND surname LIKE '%' || $` + strconv.Itoa(len(args)+1) + ` || '%'`
-		args = append(args, surname)
-	}
+	var args []any
+	applyFilter := func(key string, value any) {
+		intVal, ok := value.(int)
+		if ok && intVal == 0 {
+			return
+		}
 
-	query += fmt.Sprintf(" ORDER BY name LIMIT 10 OFFSET %d", offset)
+		stringVal, ok := value.(string)
+		if ok && stringVal == "" {
+			return
+		}
+
+		args = append(args, value)
+		if slices.Contains([]string{"name", "surname", "patronymic"}, key) {
+			query += fmt.Sprintf(` AND %s LIKE '%%' || $%d || '%%'`, key, len(args))
+		} else {
+			query += fmt.Sprintf(` AND %s = $%d`, key, len(args))
+		}
+	}
+	applyFilter("name", name)
+	applyFilter("surname", surname)
+	applyFilter("patronymic", patronymic)
+	applyFilter("gender", gender)
+	applyFilter("country_id", countryId)
+	applyFilter("age", age)
+
+	if size == 0 {
+		size = 10 // default
+	}
+	if page == 0 {
+		page = 1 // default
+	}
+	page = (page - 1) * size
+	query += fmt.Sprintf(" ORDER BY name LIMIT %d OFFSET %d", size, page)
 
 	rows, err := r.conn.DB.Query(query, args...)
 	if err != nil {

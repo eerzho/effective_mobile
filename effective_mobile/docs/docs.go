@@ -31,6 +31,12 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "integer",
+                        "description": "size",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
                         "description": "name",
                         "name": "name",
@@ -40,6 +46,30 @@ const docTemplate = `{
                         "type": "string",
                         "description": "surname",
                         "name": "surname",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "patronymic",
+                        "name": "patronymic",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "gender",
+                        "name": "gender",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "countryId",
+                        "name": "countryId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "age",
+                        "name": "age",
                         "in": "query"
                     }
                 ],

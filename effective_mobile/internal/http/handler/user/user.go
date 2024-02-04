@@ -30,8 +30,13 @@ func New(log *slog.Logger, service Service) *Handler {
 // Index
 // @tags users
 // @param page query int false "page"
+// @param size query int false "size"
 // @param name query string false "name"
 // @param surname query string false "surname"
+// @param patronymic query string false "patronymic"
+// @param gender query string false "gender"
+// @param countryId query string false "countryId"
+// @param age query string false "age"
 // @success 200 {object} response.Index
 // @response 500 {object} response.Error
 // @router /users [get]
@@ -46,14 +51,16 @@ func (h *Handler) Index() http.HandlerFunc {
 
 		queryParams := r.URL.Query()
 
+		page, _ := strconv.Atoi(queryParams.Get("page"))
+		size, _ := strconv.Atoi(queryParams.Get("size"))
 		name := queryParams.Get("name")
 		surname := queryParams.Get("surname")
-		page, err := strconv.Atoi(queryParams.Get("page"))
-		if err != nil {
-			page = 1
-		}
+		patronymic := queryParams.Get("patronymic")
+		gender := queryParams.Get("gender")
+		countryId := queryParams.Get("countryId")
+		age, _ := strconv.Atoi(queryParams.Get("age"))
 
-		users, err := h.service.Index(page, name, surname)
+		users, err := h.service.Index(page, size, name, surname, patronymic, gender, countryId, age)
 		if err != nil {
 			log.Error("failed to get list of users", sl.Err(err))
 

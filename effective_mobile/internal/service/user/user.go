@@ -33,14 +33,14 @@ func New(
 	}
 }
 
-func (s *Service) Index(page int, name, surname string) ([]*domain.User, error) {
+func (s *Service) Index(page, size int, name, surname, patronymic, gender, countryId string, age int) ([]*domain.User, error) {
 	const op = "service.user.Index"
 
 	log := s.log.With(slog.String("op", op))
 
 	log.Info("getting users")
 
-	list, err := s.repo.List(page, name, surname)
+	list, err := s.repo.List(page, size, name, surname, patronymic, gender, countryId, age)
 	if err != nil {
 		log.Error("failed to get users")
 

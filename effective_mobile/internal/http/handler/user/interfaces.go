@@ -5,7 +5,7 @@ import (
 )
 
 type Service interface {
-	Index(page int, name, surname string) ([]*domain.User, error)
+	Index(page, size int, name, surname, patronymic, gender, countryId string, age int) ([]*domain.User, error)
 	Store(name, surname string, patronymic *string) (*domain.User, error)
 	Show(id string) (*domain.User, error)
 	Update(id, name, surname string, patronymic, gender, countryId *string, age *int) (*domain.User, error)

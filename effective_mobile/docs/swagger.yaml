@@ -126,6 +126,10 @@ paths:
         in: query
         name: page
         type: integer
+      - description: size
+        in: query
+        name: size
+        type: integer
       - description: name
         in: query
         name: name
@@ -133,6 +137,22 @@ paths:
       - description: surname
         in: query
         name: surname
+        type: string
+      - description: patronymic
+        in: query
+        name: patronymic
+        type: string
+      - description: gender
+        in: query
+        name: gender
+        type: string
+      - description: countryId
+        in: query
+        name: countryId
+        type: string
+      - description: age
+        in: query
+        name: age
         type: string
       responses:
         "200":
